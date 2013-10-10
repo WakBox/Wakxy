@@ -22,6 +22,7 @@ public:
     ~MainWindow();
 
     void Log(QString line);
+    void SaveCurrentSniff();
     void AddToPacketList(PacketReader* reader);
 
     void OpenPacketDialog(QString packetType, QByteArray packet, QString script = QString());

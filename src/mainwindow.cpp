@@ -55,8 +55,29 @@ void MainWindow::Log(QString line)
     ui->logs->appendPlainText(">> " + line);
 }
 
+void MainWindow::SaveCurrentSniff()
+{
+    if (ui->packets->topLevelItemCount() > 0 && !m_fileSaved)
+    {
+        QMessageBox msgBox;
+        msgBox.setText(tr("Current sniff are not saved."));
+        msgBox.setInformativeText(tr("Do you want to save it ? Otherwise it'll be deleted."));
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::Yes);
+        int result = msgBox.exec();
+
+        if (result == QMessageBox::Yes)
+            SaveAs();
+    }
+
+    ui->packets->clear();
+    m_packetNumber = 0;
+}
+
 void MainWindow::Open()
 {
+    SaveCurrentSniff();
+
     QString filename = QFileDialog::getOpenFileName(this, tr("Open file"), "", tr("Wakxy file (*.wxy)"));
 
     if (filename.isNull())
@@ -115,27 +136,14 @@ void MainWindow::StartProxy()
     if (!m_proxy->listen(QHostAddress::LocalHost, 442))
         return;
 
-    // save current sniff ?
-    if (ui->packets->topLevelItemCount() > 0 && !m_fileSaved)
-    {
-        QMessageBox msgBox;
-        msgBox.setText(tr("Current sniff are not saved."));
-        msgBox.setInformativeText(tr("Do you want to save it ? Otherwise it'll be deleted."));
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-        msgBox.setDefaultButton(QMessageBox::Yes);
-        int result = msgBox.exec();
-
-        if (result == QMessageBox::Yes)
-            SaveAs();
-
-        ui->packets->clear();
-    }
+    SaveCurrentSniff();
 
     m_fileSaved = false;
     m_started = true;
     ui->buttonStartProxy->setText(tr("Stop proxy"));
 
     ui->logs->clear();
+
     Log(tr("Proxy started ! You can now login."));
 }
 
@@ -182,7 +190,6 @@ void MainWindow::OnClientConnect()
 
 void MainWindow::OnClientPacketRecv()
 {
-    qDebug() << "OnClientPacketRecv";
     QDataStream in(m_client);
 
     while (m_client->bytesAvailable())
