@@ -22,7 +22,7 @@ void PacketReader::ReadHeader()
 {
     *m_packetStream >> m_size;
 
-    if (m_type == "CMSG")
+    if (GetType() == "CMSG")
     {
         qint8 unk1;
         *m_packetStream >> unk1;
@@ -109,19 +109,37 @@ template <typename T> T PacketReader::Read(QString name)
 {
     T v;
     *m_packetStream >> v;
-    *m_analyzedPacketStream << name << " : " << v << "\n\n";
+
+    if (!name.isEmpty())
+        *m_analyzedPacketStream << name << " : " << v << "\n\n";
+
     return v;
 }
 
-bool PacketReader::ReadBool(QString name) { return Read<bool>(name + " [Bool]"); }
-qint32 PacketReader::ReadInt(QString name) { return Read<qint32>(name + " [Int]"); }
-quint32 PacketReader::ReadUInt(QString name) { return Read<quint32>(name + " [UInt]"); }
-float PacketReader::ReadFloat(QString name) { return Read<float>(name + " [Float]"); }
-double PacketReader::ReadDouble(QString name) { return Read<double>(name + " [Double]"); }
-qint16 PacketReader::ReadShort(QString name) { return Read<qint16>(name + " [Short]"); }
-quint16 PacketReader::ReadUShort(QString name) { return Read<quint16>(name + " [UShort]"); }
-char PacketReader::ReadByte(QString name){ return Read<qint8>(name + " [Byte]"); }
-uchar PacketReader::ReadUByte(QString name) { return Read<quint8>(name + " [UByte]"); }
-qint64 PacketReader::ReadLong(QString name) { return Read<qint64>(name + " [Long]"); }
-quint64 PacketReader::ReadULong(QString name) { return Read<quint64>(name + " [ULong]"); }
-QString PacketReader::ReadString(QString name) { return Read<QString>(name + " [QString]"); }
+bool PacketReader::ReadBool(QString name) { return Read<bool>((!name.isEmpty()) ? name + " [Bool]" : QString()); }
+qint32 PacketReader::ReadInt(QString name) { return Read<qint32>((!name.isEmpty()) ? name + " [Int]" : QString()); }
+quint32 PacketReader::ReadUInt(QString name) { return Read<quint32>((!name.isEmpty()) ? name + " [UInt]" : QString()); }
+float PacketReader::ReadFloat(QString name) { return Read<float>((!name.isEmpty()) ? name + " [Float]" : QString()); }
+double PacketReader::ReadDouble(QString name) { return Read<double>((!name.isEmpty()) ? name + " [Double]" : QString()); }
+qint16 PacketReader::ReadShort(QString name) { return Read<qint16>((!name.isEmpty()) ? name + " [Short]" : QString()); }
+quint16 PacketReader::ReadUShort(QString name) { return Read<quint16>((!name.isEmpty()) ? name + " [UShort]" : QString()); }
+char PacketReader::ReadByte(QString name){ return Read<qint8>((!name.isEmpty()) ? name + " [Byte]" : QString()); }
+uchar PacketReader::ReadUByte(QString name) { return Read<quint8>((!name.isEmpty()) ? name + " [UByte]" : QString()); }
+qint64 PacketReader::ReadLong(QString name) { return Read<qint64>((!name.isEmpty()) ? name + " [Long]" : QString()); }
+quint64 PacketReader::ReadULong(QString name) { return Read<quint64>((!name.isEmpty()) ? name + " [ULong]" : QString()); }
+
+QString PacketReader::ReadString(quint16 length, QString name)
+{
+    QByteArray bytes;
+    bytes.resize(length);
+
+    for (quint16 i = 0; i < length; ++i)
+        bytes[i] = Read<qint8>();
+
+    QString string = QString(bytes);
+
+    if (!name.isEmpty())
+        *m_analyzedPacketStream << name << " [String] : " << string << "\n\n";
+
+    return string;
+}

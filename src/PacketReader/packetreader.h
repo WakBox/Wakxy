@@ -38,18 +38,18 @@ public slots:
     int Length();
     void Comment(QString comment);
 
-    bool ReadBool(QString name);
-    qint32 ReadInt(QString name);
-    quint32 ReadUInt(QString name);
-    float ReadFloat(QString name);
-    double ReadDouble(QString name);
-    qint16 ReadShort(QString name);
-    quint16 ReadUShort(QString name);
-    char ReadByte(QString name);
-    uchar ReadUByte(QString name);
-    qint64 ReadLong(QString name);
-    quint64 ReadULong(QString name);
-    QString ReadString(QString name);
+    bool ReadBool(QString name = QString());
+    qint32 ReadInt(QString name = QString());
+    quint32 ReadUInt(QString name = QString());
+    float ReadFloat(QString name = QString());
+    double ReadDouble(QString name = QString());
+    qint16 ReadShort(QString name = QString());
+    quint16 ReadUShort(QString name = QString());
+    char ReadByte(QString name = QString());
+    uchar ReadUByte(QString name = QString());
+    qint64 ReadLong(QString name = QString());
+    quint64 ReadULong(QString name = QString());
+    QString ReadString(quint16 length, QString name = QString());
 
 protected:
     QByteArray m_packet;

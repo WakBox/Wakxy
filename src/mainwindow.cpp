@@ -15,11 +15,16 @@ MainWindow::MainWindow(QWidget *parent) :
     m_started = false;
     m_packetNumber = 0;
 
-    m_client = new QTcpSocket(this);
+    m_client = NULL;
     m_clientPktSize = 0;
 
     m_server = new QTcpSocket(this);
     m_serverPktSize = 0;
+
+    connect(m_server, SIGNAL(connected()), this, SLOT(OnServerConnect()));
+    connect(m_server, SIGNAL(readyRead()), this, SLOT(OnServerPacketRecv()));
+    connect(m_server, SIGNAL(disconnected()), this, SLOT(OnServerDisconnect()));
+    connect(m_server, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(OnServerError(QAbstractSocket::SocketError)));
 
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(Open()));
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(SaveAs()));
@@ -27,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->buttonOpenStruct, SIGNAL(clicked()), this, SLOT(OpenStructureFile()));
     connect(ui->buttonNewStruct, SIGNAL(clicked()), this, SLOT(OpenPacketDialog()));
     connect(ui->packets, SIGNAL(itemClicked(QTreeWidgetItem*,int)), this, SLOT(OnPacketSelect(QTreeWidgetItem*,int)));
+    connect(m_proxy, SIGNAL(newConnection()), this, SLOT(OnNewConnection()));
 
     QDir dir;
     dir.mkdir("Packets");
@@ -38,6 +44,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    StopProxy();
+    m_proxy->deleteLater();
+
     delete ui;
 }
 
@@ -125,7 +134,6 @@ void MainWindow::StartProxy()
     m_fileSaved = false;
     m_started = true;
     ui->buttonStartProxy->setText(tr("Stop proxy"));
-    connect(m_proxy, SIGNAL(newConnection()), this, SLOT(OnNewConnection()));
 
     ui->logs->clear();
     Log(tr("Proxy started ! You can now login."));
@@ -138,9 +146,13 @@ void MainWindow::StopProxy()
 
     m_started = false;
 
-    m_client->abort();
-    m_server->abort();
+    if (m_client)
+    {
+        m_client->abort();
+        m_client->deleteLater();
+    }
 
+    m_server->abort();
     m_proxy->close();
 
     ui->buttonStartProxy->setText(tr("Start proxy"));
@@ -150,16 +162,17 @@ void MainWindow::StopProxy()
 void MainWindow::OnNewConnection()
 {
     m_client = m_proxy->nextPendingConnection();
+
+    if (!m_client)
+        return;
+
     connect(m_client, SIGNAL(connected()), this, SLOT(OnClientConnect()));
     connect(m_client, SIGNAL(readyRead()), this, SLOT(OnClientPacketRecv()));
     connect(m_client, SIGNAL(disconnected()), this, SLOT(OnClientDisconnect()));
     connect(m_client, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(OnClientError(QAbstractSocket::SocketError)));
 
     m_server->connectToHost(QHostAddress("80.239.173.153"), 443);
-    connect(m_server, SIGNAL(connected()), this, SLOT(OnServerConnect()));
-    connect(m_server, SIGNAL(readyRead()), this, SLOT(OnServerPacketRecv()));
-    connect(m_server, SIGNAL(disconnected()), this, SLOT(OnServerDisconnect()));
-    connect(m_server, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(OnServerError(QAbstractSocket::SocketError)));
+    m_server->waitForConnected(2000);
 }
 
 void MainWindow::OnClientConnect()
@@ -169,6 +182,7 @@ void MainWindow::OnClientConnect()
 
 void MainWindow::OnClientPacketRecv()
 {
+    qDebug() << "OnClientPacketRecv";
     QDataStream in(m_client);
 
     while (m_client->bytesAvailable())
