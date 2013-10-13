@@ -35,7 +35,7 @@
      <rect>
       <x>10</x>
       <y>180</y>
-      <width>211</width>
+      <width>161</width>
       <height>51</height>
      </rect>
     </property>
@@ -106,7 +106,7 @@ Sgt Fatality</string>
    <widget class="QCheckBox" name="logLoginPacket">
     <property name="geometry">
      <rect>
-      <x>680</x>
+      <x>360</x>
       <y>180</y>
       <width>271</width>
       <height>51</height>
@@ -120,9 +120,9 @@ Sgt Fatality</string>
    <widget class="QPushButton" name="buttonNewStruct">
     <property name="geometry">
      <rect>
-      <x>460</x>
+      <x>800</x>
       <y>180</y>
-      <width>211</width>
+      <width>151</width>
       <height>51</height>
      </rect>
     </property>
@@ -133,14 +133,27 @@ Sgt Fatality</string>
    <widget class="QPushButton" name="buttonOpenStruct">
     <property name="geometry">
      <rect>
-      <x>235</x>
+      <x>640</x>
       <y>180</y>
-      <width>211</width>
+      <width>151</width>
       <height>51</height>
      </rect>
     </property>
     <property name="text">
      <string>Open structure file</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="buttonStartCapture">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>180</y>
+      <width>161</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Start capturing</string>
     </property>
    </widget>
   </widget>

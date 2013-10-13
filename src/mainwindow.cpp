@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_proxy = new QTcpServer(this);
     m_started = false;
+    m_capturing = false;
     m_packetNumber = 0;
 
     m_client = NULL;
@@ -29,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(Open()));
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(SaveAs()));
     connect(ui->buttonStartProxy, SIGNAL(clicked()), this, SLOT(StartProxy()));
+    connect(ui->buttonStartCapture, SIGNAL(clicked()), this, SLOT(StartCapture()));
     connect(ui->buttonOpenStruct, SIGNAL(clicked()), this, SLOT(OpenStructureFile()));
     connect(ui->buttonNewStruct, SIGNAL(clicked()), this, SLOT(OpenPacketDialog()));
     connect(ui->packets, SIGNAL(itemClicked(QTreeWidgetItem*,int)), this, SLOT(OnPacketSelect(QTreeWidgetItem*,int)));
@@ -164,7 +166,26 @@ void MainWindow::StopProxy()
     m_proxy->close();
 
     ui->buttonStartProxy->setText(tr("Start proxy"));
-    Log(tr("Proxy stopped"));
+    Log(tr("Proxy stopped."));
+}
+
+void MainWindow::StartCapture()
+{
+    if (m_capturing)
+        return StopCapture();
+
+    SaveCurrentSniff();
+
+    m_capturing = true;
+    ui->buttonStartCapture->setText(tr("Stop capturing"));
+    Log(tr("Packet capture started."));
+}
+
+void MainWindow::StopCapture()
+{
+    m_capturing = false;
+    ui->buttonStartCapture->setText(tr("Start capturing"));
+    Log(tr("Packet capture stopped."));
 }
 
 void MainWindow::OnNewConnection()
@@ -214,13 +235,16 @@ void MainWindow::OnClientPacketRecv()
         m_server->write(buffer);
         m_clientPktSize = 0;
 
-        PacketReader reader("CMSG", buffer);
-        reader.ReadHeader();
+        if (m_capturing)
+        {
+            PacketReader reader("CMSG", buffer);
+            reader.ReadHeader();
 
-        if ((reader.GetOpcode() == 1024 || reader.GetOpcode() == 1025) && !ui->logLoginPacket->isChecked())
-            return;
+            if ((reader.GetOpcode() == 1024 || reader.GetOpcode() == 1025) && !ui->logLoginPacket->isChecked())
+                return;
 
-        AddToPacketList(&reader);
+            AddToPacketList(&reader);
+        }
     }
 }
 
@@ -268,10 +292,13 @@ void MainWindow::OnServerPacketRecv()
         m_client->write(buffer);
         m_serverPktSize = 0;
 
-        PacketReader reader("SMSG", buffer);
-        reader.ReadHeader();
+        if (m_capturing)
+        {
+            PacketReader reader("SMSG", buffer);
+            reader.ReadHeader();
 
-        AddToPacketList(&reader);
+            AddToPacketList(&reader);
+        }
     }
 }
 
