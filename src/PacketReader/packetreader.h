@@ -50,6 +50,8 @@ public slots:
     qint64 ReadLong(QString name = QString());
     quint64 ReadULong(QString name = QString());
     QString ReadString(quint16 length, QString name = QString());
+    QString ReadString(QString name = QString());
+    QString ReadBigString(QString name = QString());
 
 protected:
     QByteArray m_packet;

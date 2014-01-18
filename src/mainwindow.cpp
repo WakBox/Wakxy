@@ -135,7 +135,7 @@ void MainWindow::StartProxy()
     if (m_started)
         return StopProxy();
 
-    if (!m_proxy->listen(QHostAddress::LocalHost, 442))
+    if (!m_proxy->listen(QHostAddress::LocalHost, 444))
         return;
 
     SaveCurrentSniff();
@@ -230,7 +230,7 @@ void MainWindow::OnClientPacketRecv()
         QDataStream packet(&buffer, QIODevice::WriteOnly);
 
         packet << m_clientPktSize;
-        buffer += in.device()->readAll();
+        buffer += in.device()->read((qint64)(m_clientPktSize - sizeof(quint16)));
 
         m_server->write(buffer);
         m_clientPktSize = 0;
@@ -287,7 +287,7 @@ void MainWindow::OnServerPacketRecv()
         QDataStream packet(&buffer, QIODevice::WriteOnly);
 
         packet << m_serverPktSize;
-        buffer += in.device()->readAll();
+        buffer += in.device()->read((qint64)(m_serverPktSize - sizeof(quint16)));
 
         m_client->write(buffer);
         m_serverPktSize = 0;

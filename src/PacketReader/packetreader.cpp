@@ -143,3 +143,19 @@ QString PacketReader::ReadString(quint16 length, QString name)
 
     return string;
 }
+
+QString PacketReader::ReadString(QString name)
+{
+    uchar size;
+    *m_packetStream >> size;
+
+    return ReadString(size, name);
+}
+
+QString PacketReader::ReadBigString(QString name)
+{
+    quint16 size;
+    *m_packetStream >> size;
+
+    return ReadString(size, name);
+}
