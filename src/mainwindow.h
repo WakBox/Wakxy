@@ -13,6 +13,15 @@ namespace Ui {
 class MainWindow;
 }
 
+struct Packet
+{
+    QByteArray raw;
+    PacketReader* reader;
+    qint64 delayedTime;
+};
+
+typedef QList<Packet> Packets;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -23,6 +32,7 @@ public:
 
     void Log(QString line);
     void SaveCurrentSniff();
+    void QueuePacket(Packet packet, bool isClientPacket);
     void AddToPacketList(PacketReader* reader);
 
     void OpenPacketDialog(QString packetType, QByteArray packet, QString script = QString());
@@ -47,15 +57,18 @@ public slots:
     void OnServerPacketRecv();
     void OnServerDisconnect();
     void OnServerError(QAbstractSocket::SocketError);
-    void OpenStructureFile();
-    void OpenPacketDialog();
+
+    void LiveEditPacket();
     
 private:
     Ui::MainWindow *ui;
     QTcpServer* m_proxy;
     bool m_started;
     bool m_capturing;
+    bool m_sendPacket;
     quint32 m_packetNumber;
+    qint64 m_lastPacketTime;
+    Packets m_queuedPackets;
 
     QTcpSocket* m_client;
     quint16 m_clientPktSize;

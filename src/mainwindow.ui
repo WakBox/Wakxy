@@ -117,32 +117,6 @@ Sgt Fatality</string>
  (RSA encrypted but account infos can be readed)</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="buttonNewStruct">
-    <property name="geometry">
-     <rect>
-      <x>800</x>
-      <y>180</y>
-      <width>151</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>New structure file</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="buttonOpenStruct">
-    <property name="geometry">
-     <rect>
-      <x>640</x>
-      <y>180</y>
-      <width>151</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Open structure file</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="buttonStartCapture">
     <property name="geometry">
      <rect>
@@ -156,6 +130,19 @@ Sgt Fatality</string>
      <string>Start capturing</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="buttonLiveEdit">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>180</y>
+      <width>281</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Live edit packets (stop send/recv packets)</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -163,7 +150,7 @@ Sgt Fatality</string>
      <x>0</x>
      <y>0</y>
      <width>960</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFichier">

@@ -14,7 +14,10 @@ MainWindow::MainWindow(QWidget *parent) :
     m_proxy = new QTcpServer(this);
     m_started = false;
     m_capturing = false;
+    m_sendPacket = true;
     m_packetNumber = 0;
+    m_lastPacketTime = 0;
+    m_queuedPackets.clear();
 
     m_client = NULL;
     m_clientPktSize = 0;
@@ -31,8 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(SaveAs()));
     connect(ui->buttonStartProxy, SIGNAL(clicked()), this, SLOT(StartProxy()));
     connect(ui->buttonStartCapture, SIGNAL(clicked()), this, SLOT(StartCapture()));
-    connect(ui->buttonOpenStruct, SIGNAL(clicked()), this, SLOT(OpenStructureFile()));
-    connect(ui->buttonNewStruct, SIGNAL(clicked()), this, SLOT(OpenPacketDialog()));
+    connect(ui->buttonLiveEdit, SIGNAL(clicked()), this, SLOT(LiveEditPacket()));
     connect(ui->packets, SIGNAL(itemClicked(QTreeWidgetItem*,int)), this, SLOT(OnPacketSelect(QTreeWidgetItem*,int)));
     connect(m_proxy, SIGNAL(newConnection()), this, SLOT(OnNewConnection()));
 
@@ -135,8 +137,11 @@ void MainWindow::StartProxy()
     if (m_started)
         return StopProxy();
 
-    if (!m_proxy->listen(QHostAddress::LocalHost, 444))
+    if (!m_proxy->listen(QHostAddress::LocalHost, 4443))
+    {
+        qDebug() << m_proxy->errorString();
         return;
+    }
 
     SaveCurrentSniff();
 
@@ -200,7 +205,8 @@ void MainWindow::OnNewConnection()
     connect(m_client, SIGNAL(disconnected()), this, SLOT(OnClientDisconnect()));
     connect(m_client, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(OnClientError(QAbstractSocket::SocketError)));
 
-    m_server->connectToHost(QHostAddress("80.239.173.153"), 443);
+    m_server->connectToHost(QHostAddress("127.0.0.1"), 4444);
+    //m_server->connectToHost(QHostAddress("80.239.173.153"), 443);
     m_server->waitForConnected(2000);
 }
 
@@ -227,24 +233,21 @@ void MainWindow::OnClientPacketRecv()
             return;
 
         QByteArray buffer;
-        QDataStream packet(&buffer, QIODevice::WriteOnly);
+        QDataStream stream(&buffer, QIODevice::WriteOnly);
 
-        packet << m_clientPktSize;
+        stream << m_clientPktSize;
         buffer += in.device()->read((qint64)(m_clientPktSize - sizeof(quint16)));
 
-        m_server->write(buffer);
+        PacketReader* reader = new PacketReader("CMSG", buffer);
+        reader->ReadHeader();
+
+        Packet packet;
+        packet.raw = buffer;
+        packet.reader = reader;
+        packet.delayedTime = (m_lastPacketTime > 0) ? QDateTime::currentMSecsSinceEpoch() - m_lastPacketTime : 0;
+
+        QueuePacket(packet, true);
         m_clientPktSize = 0;
-
-        if (m_capturing)
-        {
-            PacketReader reader("CMSG", buffer);
-            reader.ReadHeader();
-
-            if ((reader.GetOpcode() == 1024 || reader.GetOpcode() == 1025) && !ui->logLoginPacket->isChecked())
-                return;
-
-            AddToPacketList(&reader);
-        }
     }
 }
 
@@ -284,21 +287,21 @@ void MainWindow::OnServerPacketRecv()
             return;
 
         QByteArray buffer;
-        QDataStream packet(&buffer, QIODevice::WriteOnly);
+        QDataStream stream(&buffer, QIODevice::WriteOnly);
 
-        packet << m_serverPktSize;
+        stream << m_serverPktSize;
         buffer += in.device()->read((qint64)(m_serverPktSize - sizeof(quint16)));
 
-        m_client->write(buffer);
+        PacketReader* reader = new PacketReader("SMSG", buffer);
+        reader->ReadHeader();
+
+        Packet packet;
+        packet.raw = buffer;
+        packet.reader = reader;
+        packet.delayedTime = (m_lastPacketTime > 0) ? QDateTime::currentMSecsSinceEpoch() - m_lastPacketTime : 0;
+
+        QueuePacket(packet, false);
         m_serverPktSize = 0;
-
-        if (m_capturing)
-        {
-            PacketReader reader("SMSG", buffer);
-            reader.ReadHeader();
-
-            AddToPacketList(&reader);
-        }
     }
 }
 
@@ -315,8 +318,31 @@ void MainWindow::OnServerError(QAbstractSocket::SocketError /*error*/)
     StopProxy();
 }
 
+void MainWindow::QueuePacket(Packet packet, bool isClientPacket)
+{
+    if (m_sendPacket)
+    {
+        qDebug() << "Direct send packet";
+        (isClientPacket) ? m_server->write(packet.raw) : m_client->write(packet.raw);
+    }
+    else
+    {
+        qDebug() << "Queue packet";
+        m_queuedPackets.push_back(packet);
+    }
+
+    m_lastPacketTime = QDateTime::currentMSecsSinceEpoch();
+    AddToPacketList(packet.reader);
+}
+
 void MainWindow::AddToPacketList(PacketReader* reader)
 {
+    if (!m_capturing)
+        return;
+
+    if ((reader->GetOpcode() == 1024 || reader->GetOpcode() == 1025) && !ui->logLoginPacket->isChecked())
+        return;
+
     QTreeWidgetItem *item = new QTreeWidgetItem;
     item->setText(0, QString::number(m_packetNumber));
     item->setText(1, reader->GetType());
@@ -325,6 +351,9 @@ void MainWindow::AddToPacketList(PacketReader* reader)
     item->setText(4, Utils::ToASCII(reader->GetPacket()));
     item->setText(5, Utils::ToHexString(reader->GetPacket()));
     ui->packets->insertTopLevelItem(m_packetNumber++, item);
+
+    if (m_sendPacket)
+        delete reader;
 }
 
 void MainWindow::OnPacketSelect(QTreeWidgetItem* packet, int /*column*/)
@@ -332,26 +361,42 @@ void MainWindow::OnPacketSelect(QTreeWidgetItem* packet, int /*column*/)
     OpenPacketDialog(packet->text(1), Utils::FromHexString(packet->text(5)));
 }
 
-void MainWindow::OpenStructureFile()
-{
-    QString filename = QFileDialog::getOpenFileName(this, tr("Open file"), "", tr("Javascript file (*.js)"));
-
-    if (filename.isNull())
-        return;
-
-    if (!QFile::exists(filename))
-        return;
-
-    OpenPacketDialog(QString(), QByteArray(), filename);
-}
-
-void MainWindow::OpenPacketDialog()
-{
-    OpenPacketDialog(QString(), QByteArray());
-}
-
 void MainWindow::OpenPacketDialog(QString packetType, QByteArray packet, QString script)
 {
     DialogPacket dialog(packetType, packet, script, this);
     dialog.exec();
+}
+
+void MainWindow::LiveEditPacket()
+{
+    if (m_sendPacket)
+    {
+        m_sendPacket = false;
+        m_capturing = true;
+    }
+    else
+    {
+        m_sendPacket = true;
+        while (!m_queuedPackets.isEmpty())
+        {
+            Packet packet = m_queuedPackets.takeFirst();
+
+            QEventLoop loop;
+            QTimer timer;
+
+            timer.setSingleShot(true);
+            timer.setInterval(packet.delayedTime);
+            qDebug() << packet.delayedTime;
+
+            connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+            timer.start();
+            loop.exec();
+
+            qDebug() << packet.reader->GetPacket();
+            qDebug() << packet.reader->GetType();
+            (packet.reader->GetType() == "CMSG") ? m_server->write(packet.raw) : m_client->write(packet.raw);
+            qDebug() << "Queued packet sended !";
+            delete packet.reader;
+        }
+    }
 }
