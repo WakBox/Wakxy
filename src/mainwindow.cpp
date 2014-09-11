@@ -98,7 +98,7 @@ void MainWindow::Open()
         PacketReader reader(line.at(0), Utils::FromHexString(line.at(1)));
         reader.ReadHeader();
 
-        AddToPacketList(&reader);
+        AddToPacketList(&reader, true);
     }
 
     m_fileSaved = true;
@@ -244,7 +244,7 @@ void MainWindow::OnClientPacketRecv()
         Packet packet;
         packet.raw = buffer;
         packet.reader = reader;
-        packet.delayedTime = (m_lastPacketTime > 0) ? QDateTime::currentMSecsSinceEpoch() - m_lastPacketTime : 0;
+        packet.delayedTime = 0;
 
         QueuePacket(packet, true);
         m_clientPktSize = 0;
@@ -298,7 +298,7 @@ void MainWindow::OnServerPacketRecv()
         Packet packet;
         packet.raw = buffer;
         packet.reader = reader;
-        packet.delayedTime = (m_lastPacketTime > 0) ? QDateTime::currentMSecsSinceEpoch() - m_lastPacketTime : 0;
+        packet.delayedTime = 0;
 
         QueuePacket(packet, false);
         m_serverPktSize = 0;
@@ -328,6 +328,7 @@ void MainWindow::QueuePacket(Packet packet, bool isClientPacket)
     else
     {
         qDebug() << "Queue packet";
+        packet.delayedTime = (m_lastPacketTime > 0) ? QDateTime::currentMSecsSinceEpoch() - m_lastPacketTime : 0;
         m_queuedPackets.push_back(packet);
     }
 
@@ -335,9 +336,9 @@ void MainWindow::QueuePacket(Packet packet, bool isClientPacket)
     AddToPacketList(packet.reader);
 }
 
-void MainWindow::AddToPacketList(PacketReader* reader)
+void MainWindow::AddToPacketList(PacketReader* reader, bool openFromFile)
 {
-    if (!m_capturing)
+    if (!m_capturing && !openFromFile)
         return;
 
     if ((reader->GetOpcode() == 1024 || reader->GetOpcode() == 1025) && !ui->logLoginPacket->isChecked())
@@ -352,7 +353,7 @@ void MainWindow::AddToPacketList(PacketReader* reader)
     item->setText(5, Utils::ToHexString(reader->GetPacket()));
     ui->packets->insertTopLevelItem(m_packetNumber++, item);
 
-    if (m_sendPacket)
+    if (m_sendPacket && !openFromFile)
         delete reader;
 }
 

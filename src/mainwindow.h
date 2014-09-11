@@ -33,7 +33,7 @@ public:
     void Log(QString line);
     void SaveCurrentSniff();
     void QueuePacket(Packet packet, bool isClientPacket);
-    void AddToPacketList(PacketReader* reader);
+    void AddToPacketList(PacketReader* reader, bool openFromFile = false);
 
     void OpenPacketDialog(QString packetType, QByteArray packet, QString script = QString());
 
