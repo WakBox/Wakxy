@@ -17,6 +17,7 @@ public:
     bool ScriptFileExist();
     bool CompileScript(QString script = QString());
 
+    void SetPacket(QByteArray packet) { m_packet = packet; }
     QByteArray GetPacket() { return m_packet; }
     QString GetType() { return m_type; }
     ushort GetSize() { return m_size; }

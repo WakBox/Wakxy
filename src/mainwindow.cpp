@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     dir.mkpath("Packets/Client");
 
     m_fileSaved = false;
+    m_auth = new AuthServer(this);
 }
 
 MainWindow::~MainWindow()
@@ -51,6 +52,7 @@ MainWindow::~MainWindow()
     StopProxy();
     m_proxy->deleteLater();
 
+    delete m_auth;
     delete ui;
 }
 
@@ -137,7 +139,7 @@ void MainWindow::StartProxy()
     if (m_started)
         return StopProxy();
 
-    if (!m_proxy->listen(QHostAddress::LocalHost, 4443))
+    if (!m_proxy->listen(QHostAddress::LocalHost, 5556))
     {
         qDebug() << m_proxy->errorString();
         return;
@@ -205,8 +207,8 @@ void MainWindow::OnNewConnection()
     connect(m_client, SIGNAL(disconnected()), this, SLOT(OnClientDisconnect()));
     connect(m_client, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(OnClientError(QAbstractSocket::SocketError)));
 
-    m_server->connectToHost(QHostAddress("127.0.0.1"), 4444);
-    //m_server->connectToHost(QHostAddress("80.239.173.153"), 443);
+    m_server->connectToHost(QHostAddress("80.239.173.153"), 5556);
+    //m_server->connectToHost(QHostAddress("127.0.0.1"), 5556);
     m_server->waitForConnected(2000);
 }
 
@@ -339,9 +341,6 @@ void MainWindow::QueuePacket(Packet packet, bool isClientPacket)
 void MainWindow::AddToPacketList(PacketReader* reader, bool openFromFile)
 {
     if (!m_capturing && !openFromFile)
-        return;
-
-    if ((reader->GetOpcode() == 1024 || reader->GetOpcode() == 1025) && !ui->logLoginPacket->isChecked())
         return;
 
     QTreeWidgetItem *item = new QTreeWidgetItem;

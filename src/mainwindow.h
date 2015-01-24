@@ -8,6 +8,7 @@
 #include <QMessageBox>
 
 #include "packetreader.h"
+#include "authserver.h"
 
 namespace Ui {
 class MainWindow;
@@ -77,6 +78,8 @@ private:
     quint16 m_serverPktSize;
 
     bool m_fileSaved;
+
+    AuthServer* m_auth;
 };
 
 #endif // MAINWINDOW_H

@@ -21,14 +21,17 @@ SOURCES += main.cpp\
     Utils/utils.cpp \
     ScriptEditor/dialogpacket.cpp \
     ScriptEditor/highlighter.cpp \
-    ScriptEditor/completer.cpp
+    ScriptEditor/completer.cpp \
+    authserver.cpp
 
 HEADERS  += mainwindow.h \
     PacketReader/packetreader.h \
     Utils/utils.h \
     ScriptEditor/dialogpacket.h \
     ScriptEditor/highlighter.h \
-    ScriptEditor/completer.h
+    ScriptEditor/completer.h \
+    authserver.h \
+    worldpacket.h
 
 FORMS    += mainwindow.ui \
     ScriptEditor/dialogpacket.ui
