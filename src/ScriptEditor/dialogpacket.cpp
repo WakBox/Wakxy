@@ -118,7 +118,15 @@ void DialogPacket::Save()
 
     if (filename.isEmpty())
     {
-        QString path = "Packets/";
+        QDir dir(QCoreApplication::applicationDirPath());
+
+        #ifdef Q_OS_MAC
+            dir.cdUp();
+            dir.cdUp();
+            dir.cdUp();
+        #endif
+
+        QString path = dir.absolutePath() + "/Packets/";
         QString opcode, type;
 
         if (!m_packet)

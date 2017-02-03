@@ -28,8 +28,6 @@ struct Realm
     int configSize;
     QList<Config> configs;
 
-    int playerCount;
-    int playerLimit;
     bool locked;
 };
 

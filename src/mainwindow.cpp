@@ -11,6 +11,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    setAcceptDrops(true);
+
     m_proxy = new QTcpServer(this);
     m_started = false;
     m_capturing = false;
@@ -44,7 +46,9 @@ MainWindow::MainWindow(QWidget *parent) :
     dir.mkpath("Packets/Client");
 
     m_fileSaved = false;
-    m_auth = new AuthServer(this);
+
+    m_auth = NULL;
+    //m_auth = new AuthServer(this);
 }
 
 MainWindow::~MainWindow()
@@ -52,8 +56,32 @@ MainWindow::~MainWindow()
     StopProxy();
     m_proxy->deleteLater();
 
-    delete m_auth;
+    if (m_auth)
+        delete m_auth;
+
     delete ui;
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *e)
+{
+    if (e->mimeData()->hasUrls())
+        e->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent *e)
+{
+    foreach (const QUrl &url, e->mimeData()->urls())
+    {
+        QString filename = url.toLocalFile();
+
+        if (QFileInfo(filename).suffix() == "wxy")
+        {
+            SaveCurrentSniff();
+            OpenFile(filename);
+        }
+
+        return;
+    }
 }
 
 void MainWindow::Log(QString line)
@@ -80,15 +108,8 @@ void MainWindow::SaveCurrentSniff()
     m_packetNumber = 0;
 }
 
-void MainWindow::Open()
+void MainWindow::OpenFile(QString filename)
 {
-    SaveCurrentSniff();
-
-    QString filename = QFileDialog::getOpenFileName(this, tr("Open file"), "", tr("Wakxy file (*.wxy)"));
-
-    if (filename.isNull())
-        return;
-
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
@@ -104,6 +125,18 @@ void MainWindow::Open()
     }
 
     m_fileSaved = true;
+}
+
+void MainWindow::Open()
+{
+    SaveCurrentSniff();
+
+    QString filename = QFileDialog::getOpenFileName(this, tr("Open file"), "", tr("Wakxy file (*.wxy)"));
+
+    if (filename.isNull())
+        return;
+
+    OpenFile(filename);
 }
 
 void MainWindow::SaveAs()
@@ -139,7 +172,7 @@ void MainWindow::StartProxy()
     if (m_started)
         return StopProxy();
 
-    if (!m_proxy->listen(QHostAddress::LocalHost, 5556))
+    if (!m_proxy->listen(QHostAddress::LocalHost, 5557)) //5556
     {
         qDebug() << m_proxy->errorString();
         return;
@@ -207,8 +240,8 @@ void MainWindow::OnNewConnection()
     connect(m_client, SIGNAL(disconnected()), this, SLOT(OnClientDisconnect()));
     connect(m_client, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(OnClientError(QAbstractSocket::SocketError)));
 
-    m_server->connectToHost(QHostAddress("80.239.173.153"), 5556);
-    //m_server->connectToHost(QHostAddress("127.0.0.1"), 5556);
+    // Aerafal IP 5556/443
+    m_server->connectToHost(QHostAddress("127.0.0.1"), 5556); // QHostAddress("52.50.167.81"), 5556);
     m_server->waitForConnected(2000);
 }
 
@@ -297,6 +330,9 @@ void MainWindow::OnServerPacketRecv()
         PacketReader* reader = new PacketReader("SMSG", buffer);
         reader->ReadHeader();
 
+        // If is realm list packet (need to know the packet struct first :))
+        // then add our locals realms (from realms.txt)
+
         Packet packet;
         packet.raw = buffer;
         packet.reader = reader;
@@ -342,6 +378,9 @@ void MainWindow::AddToPacketList(PacketReader* reader, bool openFromFile)
 {
     if (!m_capturing && !openFromFile)
         return;
+
+    //if ((reader->GetOpcode() == 1024 || reader->GetOpcode() == 1025) && !ui->logLoginPacket->isChecked())
+    //    return;
 
     QTreeWidgetItem *item = new QTreeWidgetItem;
     item->setText(0, QString::number(m_packetNumber));

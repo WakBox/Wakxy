@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QDropEvent>
+#include <QMimeData>
 #include <QTreeWidgetItem>
 #include <QtNetwork>
 #include <QDialog>
@@ -33,6 +35,7 @@ public:
 
     void Log(QString line);
     void SaveCurrentSniff();
+    void OpenFile(QString filename);
     void QueuePacket(Packet packet, bool isClientPacket);
     void AddToPacketList(PacketReader* reader, bool openFromFile = false);
 
@@ -60,6 +63,10 @@ public slots:
     void OnServerError(QAbstractSocket::SocketError);
 
     void LiveEditPacket();
+
+protected:
+    void dragEnterEvent(QDragEnterEvent *e);
+    void dropEvent(QDropEvent *e);
     
 private:
     Ui::MainWindow *ui;

@@ -97,10 +97,24 @@
     </property>
     <property name="plainText">
      <string>Welcome in Wakxy proxy packet sniffer.
-Configure your Wakfu client to connect to 127.0.0.1:5558 in config.properties : dispatchAddresses=127.0.0.1:5558;143;80
+Configure your Wakfu client to connect to 127.0.0.1:442 in config.properties : proxyAddresses_1=127.0.0.1:442;5556
 
 Then start your client, start Wakxy and enjoy :)
 Sgt Fatality</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="logLoginPacket">
+    <property name="geometry">
+     <rect>
+      <x>360</x>
+      <y>180</y>
+      <width>271</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string> Log login packets ?
+ (RSA encrypted but account infos can be readed)</string>
     </property>
    </widget>
    <widget class="QPushButton" name="buttonStartCapture">
@@ -117,9 +131,6 @@ Sgt Fatality</string>
     </property>
    </widget>
    <widget class="QPushButton" name="buttonLiveEdit">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
     <property name="geometry">
      <rect>
       <x>670</x>
@@ -139,7 +150,7 @@ Sgt Fatality</string>
      <x>0</x>
      <y>0</y>
      <width>960</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFichier">

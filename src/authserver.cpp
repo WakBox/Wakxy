@@ -36,7 +36,7 @@ void AuthServer::OnNewConnection()
 
     connect(m_client, SIGNAL(readyRead()), this, SLOT(OnClientPacketRecv()));
 
-    m_server->connectToHost(QHostAddress("80.239.173.156"), 5558);
+    m_server->connectToHost(QHostAddress("52.16.189.225"), 5558);
     m_server->waitForConnected(2000);
 }
 
@@ -168,8 +168,6 @@ QByteArray AuthServer::ChangeRealmList(PacketReader* reader)
             }
         }
 
-        realm.playerCount = reader->ReadInt();
-        realm.playerLimit = reader->ReadInt();
         realm.locked = reader->ReadBool();
     }
 
@@ -177,6 +175,21 @@ QByteArray AuthServer::ChangeRealmList(PacketReader* reader)
     Realm& aerafal = realms[1];
     aerafal.name = "Aerafal Wakxy";
     aerafal.ip = "127.0.0.1";
+    aerafal.ports.clear();
+    aerafal.ports.push_back(5557);
+    aerafal.ports.push_back(443);
+
+    // Let's add our custom realm :)
+    Realm pRealm = realms[1];
+    pRealm.id = 20;
+    pRealm.name = "Wakxy";
+    pRealm.community = 0; // ?
+    pRealm.ip = "127.0.0.1";
+    pRealm.ports.push_back(5557);
+    pRealm.ports.push_back(443);
+
+    pRealm.order = 8;
+    realms[pRealm.id] = pRealm;
 
     WorldPacket data(1036);
 
@@ -236,8 +249,6 @@ QByteArray AuthServer::ChangeRealmList(PacketReader* reader)
             data.WriteRawBytes(value.toLatin1().constData(), (uint)value.length());
         }
 
-        data << (int)r.playerCount;
-        data << (int)r.playerLimit;
         data << (qint8)r.locked;
     }
 

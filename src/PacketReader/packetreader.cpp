@@ -1,4 +1,5 @@
 #include "packetreader.h"
+#include "utils.h"
 #include <QMessageBox>
 
 PacketReader::PacketReader(QString type, QByteArray packet, QObject* parent) : QObject(parent)
@@ -33,7 +34,16 @@ void PacketReader::ReadHeader()
 
 bool PacketReader::ScriptFileExist()
 {
-    m_scriptFilename += "Packets/";
+    QDir dir(QCoreApplication::applicationDirPath());
+
+    #ifdef Q_OS_MAC
+        dir.cdUp();
+        dir.cdUp();
+        dir.cdUp();
+    #endif
+
+    m_scriptFilename += dir.absolutePath();
+    m_scriptFilename += "/Packets/";
     m_scriptFilename += (GetType() == "CMSG") ? "Client/" : "Server/";
     m_scriptFilename += QString::number(GetOpcode()) + ".js";
 
@@ -86,6 +96,13 @@ bool PacketReader::CompileScript(QString script)
         QMessageBox::critical(0, tr("Script error"), QString::fromLatin1("%0:%1: %2").arg(m_scriptFilename).arg(result.property("lineNumber").toInt32()).arg(result.toString()));
         return false;
     }
+
+    *m_analyzedPacketStream << "\r\n\r\n Data left : " << Length();
+
+    QByteArray dataLeft = m_packetStream->device()->readAll();
+
+    *m_analyzedPacketStream << "\r\n ASCII LEFT: " << Utils::ToASCII(dataLeft);
+    *m_analyzedPacketStream << "\r\n HEX LEFT: " << Utils::ToHexString(dataLeft);
 
     return true;
 }
