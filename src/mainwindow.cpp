@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_fileSaved = false;
 
     m_auth = NULL;
-    //m_auth = new AuthServer(this);
+    m_auth = new AuthServer(this);
 }
 
 MainWindow::~MainWindow()
@@ -241,7 +241,7 @@ void MainWindow::OnNewConnection()
     connect(m_client, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(OnClientError(QAbstractSocket::SocketError)));
 
     // Aerafal IP 5556/443
-    m_server->connectToHost(QHostAddress("127.0.0.1"), 5556); // QHostAddress("52.50.167.81"), 5556);
+    m_server->connectToHost(QHostAddress("52.50.167.81"), 5556); // QHostAddress("52.50.167.81"), 5556);
     m_server->waitForConnected(2000);
 }
 
