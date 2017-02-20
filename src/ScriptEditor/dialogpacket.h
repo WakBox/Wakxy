@@ -22,6 +22,7 @@ public:
     QAbstractItemModel* modelFromFile();
 
 public slots:
+    void DumpBlob();
     void Save();
     void OnTabChanged(int tab);
     void OnTextChanged();

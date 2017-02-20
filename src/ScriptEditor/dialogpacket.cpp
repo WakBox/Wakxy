@@ -63,6 +63,7 @@ DialogPacket::DialogPacket(QString type, QByteArray packet, QString scriptPath, 
     else
         m_scriptEditor->setPlainText("function ReadPacket()\n{\n\t// Code\n}\n\nReadPacket();");
 
+    connect(ui->Blob, SIGNAL(clicked()), this, SLOT(DumpBlob()));
     connect(ui->Close, SIGNAL(clicked()), this, SLOT(close()));
     connect(ui->Save, SIGNAL(clicked()), this, SLOT(Save()));
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(OnTabChanged(int)));
@@ -110,6 +111,35 @@ QAbstractItemModel* DialogPacket::modelFromFile()
             << "QString ReadString(\"name\");";
 
     return new QStringListModel(words, m_completer);
+}
+
+void DialogPacket::DumpBlob()
+{
+    if (!m_packet)
+        return;
+
+    QDir dir(QCoreApplication::applicationDirPath());
+
+    #ifdef Q_OS_MAC
+        dir.cdUp();
+        dir.cdUp();
+        dir.cdUp();
+    #endif
+
+    QString path = dir.absolutePath() + "/Dumps/" + QString::number(m_packet->GetOpcode()) + ".bin";
+
+    QFile blob(path);
+    if (!blob.open(QIODevice::WriteOnly))
+    {
+        QMessageBox::critical(this, tr("Error !"), tr("The file %1 can't be written !").arg(path));
+        return;
+    }
+
+    QByteArray data = m_packet->GetPacket();
+    data.remove(0, 8);
+
+    blob.write(data);
+    blob.close();
 }
 
 void DialogPacket::Save()

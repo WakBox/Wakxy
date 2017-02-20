@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     dir.mkdir("Packets");
     dir.mkpath("Packets/Server");
     dir.mkpath("Packets/Client");
+    dir.mkdir("Dumps");
 
     m_fileSaved = false;
 

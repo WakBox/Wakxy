@@ -7,19 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>960</width>
-    <height>600</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>960</width>
-    <height>600</height>
+    <height>700</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>960</width>
-    <height>600</height>
+    <height>700</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -90,6 +90,9 @@
      <height>20</height>
     </rect>
    </property>
+   <property name="text">
+    <string/>
+   </property>
   </widget>
   <widget class="QComboBox" name="Type">
    <property name="geometry">
@@ -146,7 +149,7 @@
      <x>10</x>
      <y>210</y>
      <width>191</width>
-     <height>241</height>
+     <height>301</height>
     </rect>
    </property>
    <property name="text">
@@ -168,7 +171,7 @@
      <x>210</x>
      <y>10</y>
      <width>741</width>
-     <height>581</height>
+     <height>671</height>
     </rect>
    </property>
    <property name="currentIndex">
@@ -202,7 +205,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>530</y>
+     <y>630</y>
      <width>191</width>
      <height>61</height>
     </rect>
@@ -215,13 +218,26 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>460</y>
+     <y>570</y>
      <width>191</width>
      <height>61</height>
     </rect>
    </property>
    <property name="text">
     <string>Close</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="Blob">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>530</y>
+     <width>191</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Save as BLOB</string>
    </property>
   </widget>
  </widget>
