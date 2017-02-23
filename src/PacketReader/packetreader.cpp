@@ -99,10 +99,10 @@ bool PacketReader::CompileScript(QString script)
 
     *m_analyzedPacketStream << "\r\n\r\n Data left : " << Length();
 
-    QByteArray dataLeft = m_packetStream->device()->readAll();
+    QByteArray remainingData = m_packetStream->device()->readAll();
 
-    *m_analyzedPacketStream << "\r\n ASCII LEFT: " << Utils::ToASCII(dataLeft);
-    *m_analyzedPacketStream << "\r\n HEX LEFT: " << Utils::ToHexString(dataLeft);
+    *m_analyzedPacketStream << "\r\n ASCII LEFT: " << Utils::ToASCII(remainingData);
+    *m_analyzedPacketStream << "\r\n HEX LEFT: " << Utils::ToHexString(remainingData);
 
     return true;
 }
@@ -175,4 +175,39 @@ QString PacketReader::ReadBigString(QString name)
     *m_packetStream >> size;
 
     return ReadString(size, name);
+}
+
+void PacketReader::Skip(quint16 size)
+{
+    for (quint16 i = 0; i < size; ++i)
+        Read<qint8>();
+}
+
+void PacketReader::DumpBlob(QString filename, quint32 size)
+{
+    QDir dir(QCoreApplication::applicationDirPath());
+
+    #ifdef Q_OS_MAC
+        dir.cdUp();
+        dir.cdUp();
+        dir.cdUp();
+    #endif
+
+    QString path = dir.absolutePath() + "/Dumps/" + QString::number(GetOpcode()) + "_" + filename + ".bin";
+
+    QFile blob(path);
+    if (!blob.open(QIODevice::WriteOnly))
+        return;
+
+    if (!size)
+        size = Length();
+
+    QByteArray data;
+    data.resize(size);
+
+    for (quint16 i = 0; i < size; ++i)
+        data[i] = Read<qint8>();
+
+    blob.write(data);
+    blob.close();
 }

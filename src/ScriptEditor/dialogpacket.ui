@@ -7,19 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>960</width>
-    <height>700</height>
+    <height>650</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>960</width>
-    <height>700</height>
+    <height>650</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>960</width>
-    <height>700</height>
+    <height>650</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -171,7 +171,7 @@
      <x>210</x>
      <y>10</y>
      <width>741</width>
-     <height>671</height>
+     <height>611</height>
     </rect>
    </property>
    <property name="currentIndex">
@@ -205,7 +205,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>630</y>
+     <y>580</y>
      <width>191</width>
      <height>61</height>
     </rect>
@@ -218,26 +218,13 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>570</y>
+     <y>520</y>
      <width>191</width>
      <height>61</height>
     </rect>
    </property>
    <property name="text">
     <string>Close</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="Blob">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>530</y>
-     <width>191</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Save as BLOB</string>
    </property>
   </widget>
  </widget>
