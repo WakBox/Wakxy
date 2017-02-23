@@ -7,19 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>960</width>
-    <height>600</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>960</width>
-    <height>600</height>
+    <height>700</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>960</width>
-    <height>600</height>
+    <height>700</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -47,9 +47,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>240</y>
+      <y>280</y>
       <width>941</width>
-      <height>331</height>
+      <height>381</height>
      </rect>
     </property>
     <column>
@@ -143,6 +143,19 @@ Sgt Fatality</string>
      <string>Live edit packets (stop send/recv packets)</string>
     </property>
    </widget>
+   <widget class="QCheckBox" name="proxyWakbox">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>240</y>
+      <width>271</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Connect to WakBox</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -150,7 +163,7 @@ Sgt Fatality</string>
      <x>0</x>
      <y>0</y>
      <width>960</width>
-     <height>23</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFichier">

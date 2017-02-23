@@ -241,8 +241,11 @@ void MainWindow::OnNewConnection()
     connect(m_client, SIGNAL(disconnected()), this, SLOT(OnClientDisconnect()));
     connect(m_client, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(OnClientError(QAbstractSocket::SocketError)));
 
-    // Aerafal IP 5556/443
-    m_server->connectToHost(QHostAddress("52.50.167.81"), 5556); // QHostAddress("52.50.167.81"), 5556);
+    if (ui->proxyWakbox->isChecked())
+        m_server->connectToHost(QHostAddress("127.0.0.1"), 5556);
+    else
+        m_server->connectToHost(QHostAddress("52.50.167.81"), 5556); // Aerafal
+
     m_server->waitForConnected(2000);
 }
 
@@ -380,8 +383,8 @@ void MainWindow::AddToPacketList(PacketReader* reader, bool openFromFile)
     if (!m_capturing && !openFromFile)
         return;
 
-    //if ((reader->GetOpcode() == 1024 || reader->GetOpcode() == 1025) && !ui->logLoginPacket->isChecked())
-    //    return;
+    if ((reader->GetOpcode() == 1024 || reader->GetOpcode() == 1025) && !ui->logLoginPacket->isChecked())
+        return;
 
     QTreeWidgetItem *item = new QTreeWidgetItem;
     item->setText(0, QString::number(m_packetNumber));
