@@ -202,6 +202,9 @@ void PacketReader::DumpBlob(QString filename, quint32 size)
     if (!size)
         size = Length();
 
+    if (size > 2000)
+        return;
+
     QByteArray data;
     data.resize(size);
 
