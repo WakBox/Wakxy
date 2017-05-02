@@ -50,6 +50,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_auth = NULL;
     m_auth = new AuthServer(this);
+
+    // TODO
+    ui->buttonLiveEdit->setDisabled(true);
 }
 
 MainWindow::~MainWindow()

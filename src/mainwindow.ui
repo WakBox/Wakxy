@@ -96,10 +96,10 @@
      <bool>true</bool>
     </property>
     <property name="plainText">
-     <string>Welcome in Wakxy proxy packet sniffer.
-Configure your Wakfu client to connect to 127.0.0.1:442 in config.properties : proxyAddresses_1=127.0.0.1:442;5556
+     <string>Wakxy packet sniffer.
+Configure your Wakfu client to connect to 127.0.0.1:5558 in config.properties : dispatchAddresses=127.0.0.1:5558;80
 
-Then start your client, start Wakxy and enjoy :)
+Then start your client (bypass the updater!) and start Wakxy.
 Sgt Fatality</string>
     </property>
    </widget>
@@ -114,7 +114,8 @@ Sgt Fatality</string>
     </property>
     <property name="text">
      <string> Log login packets ?
- (RSA encrypted but account infos can be readed)</string>
+ (RSA encrypted but
+ account infos can be readed)</string>
     </property>
    </widget>
    <widget class="QPushButton" name="buttonStartCapture">
@@ -153,7 +154,7 @@ Sgt Fatality</string>
      </rect>
     </property>
     <property name="text">
-     <string>Connect to WakBox</string>
+     <string>Connect to WakBox (127.0.0.1:5556)</string>
     </property>
    </widget>
   </widget>
