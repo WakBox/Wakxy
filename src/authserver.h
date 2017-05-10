@@ -46,6 +46,9 @@ public slots:
     void OnClientPacketRecv();
     void OnServerPacketRecv();
 
+signals:
+    void AddToPacketList(PacketReader* reader, bool openFromFile = false);
+
 private:
     QTcpServer* m_proxy;
 

@@ -51,6 +51,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_auth = NULL;
     m_auth = new AuthServer(this);
 
+    connect(m_auth, SIGNAL(AddToPacketList(PacketReader*,bool)), this, SLOT(AddToPacketList(PacketReader*,bool)));
+
     // TODO
     ui->buttonLiveEdit->setDisabled(true);
 }
@@ -337,9 +339,6 @@ void MainWindow::OnServerPacketRecv()
         PacketReader* reader = new PacketReader("SMSG", buffer);
         reader->ReadHeader();
 
-        // If is realm list packet (need to know the packet struct first :))
-        // then add our locals realms (from realms.txt)
-
         Packet packet;
         packet.raw = buffer;
         packet.reader = reader;
@@ -386,7 +385,7 @@ void MainWindow::AddToPacketList(PacketReader* reader, bool openFromFile)
     if (!m_capturing && !openFromFile)
         return;
 
-    if ((reader->GetOpcode() == 1024 || reader->GetOpcode() == 1025) && !ui->logLoginPacket->isChecked())
+    if ((reader->GetOpcode() == 1026 || reader->GetOpcode() == 1027) && !ui->logLoginPacket->isChecked())
         return;
 
     QTreeWidgetItem *item = new QTreeWidgetItem;

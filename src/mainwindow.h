@@ -37,7 +37,6 @@ public:
     void SaveCurrentSniff();
     void OpenFile(QString filename);
     void QueuePacket(Packet packet, bool isClientPacket);
-    void AddToPacketList(PacketReader* reader, bool openFromFile = false);
 
     void OpenPacketDialog(QString packetType, QByteArray packet, QString script = QString());
 
@@ -62,6 +61,7 @@ public slots:
     void OnServerDisconnect();
     void OnServerError(QAbstractSocket::SocketError);
 
+    void AddToPacketList(PacketReader* reader, bool openFromFile = false);
     void LiveEditPacket();
 
 protected:

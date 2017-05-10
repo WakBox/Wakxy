@@ -63,7 +63,12 @@ void AuthServer::OnClientPacketRecv()
         stream << m_clientPktSize;
         buffer += in.device()->read((qint64)(m_clientPktSize - sizeof(quint16)));
 
-        m_server->write(buffer);
+        PacketReader* reader = new PacketReader("CMSG", buffer);
+        reader->ReadHeader();
+
+        emit AddToPacketList(reader);
+
+        m_server->write(reader->GetPacket());
         m_clientPktSize = 0;
     }
 }
@@ -105,6 +110,8 @@ void AuthServer::OnServerPacketRecv()
 
             return;
         }
+
+        emit AddToPacketList(reader);
 
         m_client->write(reader->GetPacket());
         m_serverPktSize = 0;
