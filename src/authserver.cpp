@@ -103,17 +103,12 @@ void AuthServer::OnServerPacketRecv()
         {
             QByteArray packet = ChangeRealmList(reader);
             m_client->write(packet);
-            m_serverPktSize = 0;
-
-            // Should disconnect from socket ?
-            //m_server->disconnectFromHost();
-
-            return;
         }
+        else
+            m_client->write(reader->GetPacket());
 
         emit AddToPacketList(reader);
 
-        m_client->write(reader->GetPacket());
         m_serverPktSize = 0;
     }
 }
