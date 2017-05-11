@@ -183,7 +183,7 @@ void PacketReader::Skip(quint16 size)
         Read<qint8>();
 }
 
-void PacketReader::DumpBlob(QString filename, quint32 size)
+void PacketReader::DumpBlob(QString filename, qint32 size)
 {
     QDir dir(QCoreApplication::applicationDirPath());
 
@@ -200,6 +200,9 @@ void PacketReader::DumpBlob(QString filename, quint32 size)
         return;
 
     if (!size)
+        return;
+
+    if (size == -1)
         size = Length();
 
     if (size > 2000)
