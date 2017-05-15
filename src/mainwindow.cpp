@@ -27,6 +27,9 @@ MainWindow::MainWindow(QWidget *parent) :
     m_server = new QTcpSocket(this);
     m_serverPktSize = 0;
 
+    m_filterOperator = FILTER_TYPE_IS_EQUAL;
+    m_filteredOpcodes.clear();
+
     connect(m_server, SIGNAL(connected()), this, SLOT(OnServerConnect()));
     connect(m_server, SIGNAL(readyRead()), this, SLOT(OnServerPacketRecv()));
     connect(m_server, SIGNAL(disconnected()), this, SLOT(OnServerDisconnect()));
@@ -39,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->buttonLiveEdit, SIGNAL(clicked()), this, SLOT(LiveEditPacket()));
     connect(ui->packets, SIGNAL(itemClicked(QTreeWidgetItem*,int)), this, SLOT(OnPacketSelect(QTreeWidgetItem*,int)));
     connect(m_proxy, SIGNAL(newConnection()), this, SLOT(OnNewConnection()));
+    connect(ui->filter, SIGNAL(returnPressed()), this, SLOT(UpdateFilter()));
 
     QDir dir;
     dir.mkdir("Packets");
@@ -165,7 +169,9 @@ void MainWindow::SaveAs()
 
     while (*itr)
     {
-        out << (*itr)->text(1) << ";" << (*itr)->text(5) << "\n";
+        if (!(*itr)->isHidden())
+            out << (*itr)->text(1) << ";" << (*itr)->text(5) << "\n";
+
         ++itr;
     }
 
@@ -397,6 +403,10 @@ void MainWindow::AddToPacketList(PacketReader* reader, bool openFromFile)
     item->setText(5, Utils::ToHexString(reader->GetPacket()));
     ui->packets->insertTopLevelItem(m_packetNumber++, item);
 
+    // Filter check
+    if (IsFiltered(reader->GetOpcode()))
+        item->setHidden(true);
+
     if (m_sendPacket && !openFromFile)
         delete reader;
 }
@@ -443,5 +453,83 @@ void MainWindow::LiveEditPacket()
             qDebug() << "Queued packet sended !";
             delete packet.reader;
         }
+    }
+}
+
+bool MainWindow::IsFiltered(ushort opcode)
+{
+    if (m_filteredOpcodes.isEmpty())
+        return false;
+
+    bool filtered = true;
+    bool found = false;
+
+    for (QList<ushort>::ConstIterator itr = m_filteredOpcodes.begin(); itr != m_filteredOpcodes.end(); ++itr)
+    {
+        switch (m_filterOperator)
+        {
+            case FILTER_TYPE_IS_EQUAL:
+                if (opcode == (*itr))
+                    return false;
+            break;
+
+            case FILTER_TYPE_IS_NOT_EQUAL:
+                if (opcode != (*itr) && !found)
+                {
+                    filtered = false;
+                }
+                else if (!found)
+                    filtered = found = true;
+            break;
+
+            case FILTER_TYPE_IS_SMALLER:
+                if (opcode < (*itr))
+                    return false;
+            break;
+
+            case FILTER_TYPE_IS_BIGGER:
+                if (opcode > (*itr))
+                    return false;
+            break;
+        }
+    }
+
+    return filtered;
+}
+
+void MainWindow::UpdateFilter()
+{
+    QStringList filters = ui->filter->text().split(" ");
+    m_filteredOpcodes.clear();
+
+    if (filters.count() == 2)
+    {
+        QString filterOperatorStr = filters.at(0);
+
+        if (filterOperatorStr == "=")
+            m_filterOperator = FILTER_TYPE_IS_EQUAL;
+        else if (filterOperatorStr == "!=")
+            m_filterOperator = FILTER_TYPE_IS_NOT_EQUAL;
+        else if (filterOperatorStr == "<")
+            m_filterOperator = FILTER_TYPE_IS_SMALLER;
+        else if (filterOperatorStr == ">")
+            m_filterOperator = FILTER_TYPE_IS_BIGGER;
+
+        QStringList opcodesStr = filters.at(1).split(",");
+
+        QStringListIterator itr(opcodesStr);
+        while (itr.hasNext())
+            m_filteredOpcodes.push_back((ushort)itr.next().toShort());
+    }
+
+    QTreeWidgetItemIterator it(ui->packets);
+    while (*it)
+    {
+        if (IsFiltered((*it)->text(3).toShort()))
+            (*it)->setHidden(true);
+        else if ((*it)->isHidden())
+            (*it)->setHidden(false);
+
+        ++it;
     }
 }

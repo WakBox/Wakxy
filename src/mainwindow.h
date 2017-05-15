@@ -16,6 +16,13 @@ namespace Ui {
 class MainWindow;
 }
 
+enum FilterType {
+    FILTER_TYPE_IS_EQUAL,
+    FILTER_TYPE_IS_NOT_EQUAL,
+    FILTER_TYPE_IS_SMALLER,
+    FILTER_TYPE_IS_BIGGER
+};
+
 struct Packet
 {
     QByteArray raw;
@@ -39,6 +46,8 @@ public:
     void QueuePacket(Packet packet, bool isClientPacket);
 
     void OpenPacketDialog(QString packetType, QByteArray packet, QString script = QString());
+
+    bool IsFiltered(ushort opcode);
 
 public slots:
     void Open();
@@ -64,6 +73,8 @@ public slots:
     void AddToPacketList(PacketReader* reader, bool openFromFile = false);
     void LiveEditPacket();
 
+    void UpdateFilter();
+
 protected:
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
@@ -87,6 +98,9 @@ private:
     bool m_fileSaved;
 
     AuthServer* m_auth;
+
+    FilterType m_filterOperator;
+    QList<ushort> m_filteredOpcodes;
 };
 
 #endif // MAINWINDOW_H
