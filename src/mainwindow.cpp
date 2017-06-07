@@ -532,13 +532,15 @@ void MainWindow::UpdateFilter()
     {
         if (IsFiltered((*it)->text(3).toShort()))
             (*it)->setHidden(true);
-        else if ((*it)->isHidden())
+        else
+        {
             (*it)->setHidden(false);
 
-        if (m_writeSQL)
-        {
-            PacketReader* reader = new PacketReader((*it)->text(1), Utils::FromHexString((*it)->text(5)));
-            reader->CompileScript();
+            if (m_writeSQL)
+            {
+                PacketReader* reader = new PacketReader((*it)->text(1), Utils::FromHexString((*it)->text(5)));
+                reader->CompileScript();
+            }
         }
 
         ++it;
