@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_filterOperator = FILTER_TYPE_IS_EQUAL;
     m_filteredOpcodes.clear();
+    m_writeSQL = false;
 
     connect(m_server, SIGNAL(connected()), this, SLOT(OnServerConnect()));
     connect(m_server, SIGNAL(readyRead()), this, SLOT(OnServerPacketRecv()));
@@ -501,8 +502,9 @@ void MainWindow::UpdateFilter()
 {
     QStringList filters = ui->filter->text().split(" ");
     m_filteredOpcodes.clear();
+    m_writeSQL = false;
 
-    if (filters.count() == 2)
+    if (filters.count() >= 2)
     {
         QString filterOperatorStr = filters.at(0);
 
@@ -520,6 +522,9 @@ void MainWindow::UpdateFilter()
         QStringListIterator itr(opcodesStr);
         while (itr.hasNext())
             m_filteredOpcodes.push_back((ushort)itr.next().toShort());
+
+        if (filters.count() == 3)
+            m_writeSQL = (filters.at(2) == "sql");
     }
 
     QTreeWidgetItemIterator it(ui->packets);
@@ -529,6 +534,12 @@ void MainWindow::UpdateFilter()
             (*it)->setHidden(true);
         else if ((*it)->isHidden())
             (*it)->setHidden(false);
+
+        if (m_writeSQL)
+        {
+            PacketReader* reader = new PacketReader((*it)->text(1), Utils::FromHexString((*it)->text(5)));
+            reader->CompileScript();
+        }
 
         ++it;
     }

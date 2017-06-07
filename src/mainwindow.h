@@ -20,7 +20,8 @@ enum FilterType {
     FILTER_TYPE_IS_EQUAL,
     FILTER_TYPE_IS_NOT_EQUAL,
     FILTER_TYPE_IS_SMALLER,
-    FILTER_TYPE_IS_BIGGER
+    FILTER_TYPE_IS_BIGGER,
+    FILTER_TYPE_SQL
 };
 
 struct Packet
@@ -101,6 +102,7 @@ private:
 
     FilterType m_filterOperator;
     QList<ushort> m_filteredOpcodes;
+    bool m_writeSQL;
 };
 
 #endif // MAINWINDOW_H

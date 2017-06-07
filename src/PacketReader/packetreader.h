@@ -55,6 +55,7 @@ public slots:
     QString ReadBigString(QString name = QString());
     void Skip(quint16 length);
     void DumpBlob(QString filename, qint32 size = -1);
+    void WriteSQL(QString filename, QString fields, QString values);
 
 protected:
     QByteArray m_packet;

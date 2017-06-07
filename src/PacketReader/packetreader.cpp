@@ -217,3 +217,30 @@ void PacketReader::DumpBlob(QString filename, qint32 size)
     blob.write(data);
     blob.close();
 }
+
+void PacketReader::WriteSQL(QString filename, QString fields, QString values)
+{
+    QDir dir(QCoreApplication::applicationDirPath());
+
+    #ifdef Q_OS_MAC
+        dir.cdUp();
+        dir.cdUp();
+        dir.cdUp();
+    #endif
+
+    QString path = dir.absolutePath() + "/SQL/" + QString::number(GetOpcode()) + "_" + filename + ".sql";
+
+    QFile sql(path);
+    if (!sql.open(QIODevice::WriteOnly | QIODevice::Append))
+        return;
+
+    QString req = "REPLACE INTO `creatures` (" + fields + ") VALUES";
+    req += "(" + values + ");";
+
+    QTextStream stream( &sql );
+    stream << req << "\n";
+
+    qDebug() << req;
+
+    sql.close();
+}
