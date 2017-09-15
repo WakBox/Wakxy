@@ -6,6 +6,7 @@ PacketReader::PacketReader(QString type, QByteArray packet, QObject* parent) : Q
 {
     m_packet    = packet;
     m_packetStream = new QDataStream(m_packet);
+    m_packetStream->setFloatingPointPrecision(QDataStream::SinglePrecision);
 
     m_analyzedPacket = QString();
     m_analyzedPacketStream = new QTextStream(&m_analyzedPacket);
@@ -17,6 +18,9 @@ PacketReader::PacketReader(QString type, QByteArray packet, QObject* parent) : Q
     m_scriptFilename = QString();
     m_script = QString();
     m_scriptEngine = NULL;
+
+    m_header = QByteArray();
+    deflated = false;
 }
 
 void PacketReader::ReadHeader()
@@ -30,6 +34,15 @@ void PacketReader::ReadHeader()
     }
 
     *m_packetStream >> m_opcode;
+
+    if (!deflated)
+    {
+        m_header = QByteArray();
+        QDataStream stream(m_header);
+
+        stream << m_size;
+        stream << m_opcode;
+    }
 }
 
 bool PacketReader::ScriptFileExist()
@@ -56,7 +69,8 @@ bool PacketReader::CompileScript(QString script)
     m_analyzedPacketStream->seek(0);
     m_packetStream->device()->seek(0);
 
-    ReadHeader();
+    if (!deflated)
+        ReadHeader();
 
     if (m_scriptFilename.isEmpty())
         if (!ScriptFileExist())
@@ -105,6 +119,26 @@ bool PacketReader::CompileScript(QString script)
     *m_analyzedPacketStream << "\r\n HEX LEFT: " << Utils::ToHexString(remainingData);
 
     return true;
+}
+
+void PacketReader::Deflate()
+{
+    if (deflated)
+        return;
+
+    QByteArray data = m_packetStream->device()->readAll();
+    data = qUncompress(data);
+
+
+    m_packet = QByteArray();
+    m_packet.append(m_header);
+    m_packet.append(data);
+    delete m_packetStream;
+
+    m_packetStream = new QDataStream(m_packet);
+    m_packetStream->setFloatingPointPrecision(QDataStream::SinglePrecision);
+
+    deflated = true;
 }
 
 void PacketReader::Log(QVariant name)

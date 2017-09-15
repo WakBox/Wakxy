@@ -35,6 +35,7 @@ public:
     quint8 ReadUInt8();
 
 public slots:
+    void Deflate();
     void Log(QVariant name);
     int Length();
     void Comment(QString comment);
@@ -71,6 +72,9 @@ protected:
     QString m_scriptFilename;
     QString m_script;
     QScriptEngine* m_scriptEngine;
+
+    QByteArray m_header;
+    bool deflated;
 };
 
 #endif // PACKETREADER_H
